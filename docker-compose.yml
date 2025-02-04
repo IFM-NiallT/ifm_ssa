@@ -1,0 +1,40 @@
+services:
+  # Overview Service
+  overview-service:
+    build:
+      context: ./overview-svc
+      dockerfile: Dockerfile
+    container_name: overview-service
+    ports:
+      - "5000:5000"  # Flask
+      - "5001:5001"  # Shiny
+    networks:
+      - app-network
+
+  # Catalog Service
+  catalog-service:
+    build:
+      context: ./catalog-svc
+      dockerfile: Dockerfile
+    container_name: catalog-service
+    ports:
+      - "5002:5000"  # Flask
+      - "5003:5001"  # Shiny
+    networks:
+      - app-network
+
+  # Clients Service
+  clients-service:
+    build:
+      context: ./clients-svc
+      dockerfile: Dockerfile
+    container_name: clients-service
+    ports:
+      - "5004:5001"  # Flask
+      - "5005:5002"  # Shiny
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge

@@ -1,0 +1,18 @@
+# Use Python as the base image
+FROM python:3.9-slim
+
+# Set working directory
+WORKDIR /app
+
+# Copy and install dependencies
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy application code
+COPY . .
+
+# Expose necessary ports
+EXPOSE 5001 8001
+
+# Start both Flask and Shiny services using Gunicorn
+CMD ["sh", "-c", "gunicorn -w 4 -b 0.0.0.0:5001 clients_app:app & python clients_shiny.py"]
