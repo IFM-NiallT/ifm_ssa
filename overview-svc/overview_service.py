@@ -1,45 +1,72 @@
 import logging
-from logging.handlers import RotatingFileHandler
+from typing import Dict, Any, Optional
+from datetime import datetime
+from config import OverviewConfig
+from exceptions import CatalogServiceError, DataProcessingError
 
 class OverviewService:
-    """Handles the logic for fetching and calculating the sales overview."""
+    """
+    Service class for handling sales overview data and calculations.
+    
+    This class manages the interaction between the overview service and the catalog
+    service, handling data retrieval and processing for sales overview information.
+    
+    Attributes:
+        config (OverviewConfig): Configuration instance for the service.
+        logger (logging.Logger): Logger instance for the service.
+    """
 
-    def __init__(self, budget_rev_counter=1_000_000, ytd_sales=450_000):
-        """Initialize service with defaults."""
-        self.logger = self.setup_logger()
-        self.budget_rev_counter = budget_rev_counter
-        self.ytd_sales = ytd_sales
-        self.logger.info(f"Initialized OverviewService with budget: {self.budget_rev_counter}, YTD Sales: {self.ytd_sales}")
+    def __init__(self, config: OverviewConfig):
+        """
+        Initialize the overview service with configuration.
+        
+        Args:
+            config (OverviewConfig): Application configuration instance.
+        """
+        self.config = config
+        self.logger = self._setup_logging()
 
-    def setup_logger(self):
-        """Set up a rotating file logger."""
-        logger = logging.getLogger("OverviewService")
-        logger.setLevel(logging.INFO)
+    def _setup_logging(self) -> logging.Logger:
+        """
+        Configure logging for the service.
         
-        # Create a rotating file handler
-        handler = RotatingFileHandler("overview_service.log", maxBytes=10_000_000, backupCount=3)
-        formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-        
+        Returns:
+            logging.Logger: Configured logger instance.
+        """
+        logger = logging.getLogger(__name__)
+        logging.basicConfig(
+            level=getattr(logging, self.config.log_level),
+            format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+        )
         return logger
 
-    def calculate_daily_target(self):
-        """Calculate daily target."""
-        self.logger.info("Calculating daily target.")
-        if self.ytd_sales and self.budget_rev_counter:
-            daily_target = (self.budget_rev_counter - self.ytd_sales) / 30  # Assuming 30 days in a month
-            self.logger.info(f"Daily target calculated: {daily_target}")
-            return daily_target
-        self.logger.warning("Unable to calculate daily target. Missing sales data.")
-        return None
+    def _fetch_from_catalog(self, endpoint: str) -> Dict[str, Any]:
+        """
+        Fetch data from the catalog service.
+        
+        Args:
+            endpoint (str): The endpoint to fetch data from.
+            
+        Returns:
+            Dict[str, Any]: The response data from the catalog service.
+            
+        Raises:
+            CatalogServiceError: If there's an error communicating with the catalog service.
+        """
+        # Implementation will be added when catalog service is ready
+        raise NotImplementedError("Catalog service integration not implemented")
 
-    def get_overview(self):
-        """Return sales overview data."""
-        self.logger.info("Fetching sales overview.")
-        daily_target = self.calculate_daily_target()
-        return {
-            "budget_rev_counter": self.budget_rev_counter,
-            "ytd_sales": self.ytd_sales,
-            "daily_target": daily_target
-        }
+    def get_overview(self) -> Dict[str, Any]:
+        """
+        Get the sales overview data.
+        
+        Returns:
+            Dict[str, Any]: Overview data including budget revenue counter,
+                           year-to-date sales, and daily target.
+                           
+        Raises:
+            CatalogServiceError: If there's an error communicating with the catalog service.
+            DataProcessingError: If there's an error processing the data.
+        """
+        # Implementation will be added when database is ready
+        raise NotImplementedError("Overview data retrieval not implemented")
