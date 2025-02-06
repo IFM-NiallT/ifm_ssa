@@ -1,18 +1,18 @@
-# Use a lightweight Python image
-FROM python:3.9-alpine
+ARG build_env="dev"
 
-# Set the working directory
+FROM python:3.12.1-alpine3.18 AS base
 WORKDIR /app
+RUN pip install --upgrade pip
+COPY ./requirements.txt requirements.txt
+RUN pip install -r requirements.txt
+RUN apk add --no-cache redis
 
-# Install dependencies
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+FROM base AS branch-dev
+RUN apk add --no-cache curl htop
 
-# Copy the source code into the container
-COPY . .
+FROM base AS branch-prod
+COPY ./ /app/
 
-# Expose Flask app port
+FROM branch-${build_env} AS final
 EXPOSE 5000
-
-# Use Gunicorn for better process management
-CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "catalog_app:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "catalog_app:CatalogApp().app"]

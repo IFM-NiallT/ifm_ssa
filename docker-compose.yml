@@ -1,39 +1,113 @@
 services:
-  # Overview Service
+  gateway-service:
+    build:
+      context: ./gateway-svc
+      dockerfile: Dockerfile
+    container_name: gateway-service
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend-service:
+    build:
+      context: ./frontend-svc
+      dockerfile: Dockerfile
+      args:
+        build_env: ${BUILD_ENV:-dev}
+    container_name: frontend-service
+    volumes:
+      - ./frontend-svc:/app:delegated  # Only mounted in dev
+    expose:
+      - "8000"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
   overview-service:
     build:
       context: ./overview-svc
       dockerfile: Dockerfile
+      args:
+        build_env: ${BUILD_ENV:-dev}
     container_name: overview-service
+    volumes:
+      - ./overview-svc:/app:delegated  # Only mounted in dev
     ports:
-      - "5000:5000"  # Flask
-      - "5001:5001"  # Shiny
+      - "6501:5000"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
-  # Catalog Service
-  catalog-service:
-    build:
-      context: ./catalog-svc
-      dockerfile: Dockerfile
-    container_name: catalog-service
-    ports:
-      - "5002:5000"  # Flask
-      - "5003:5001"  # Shiny
-    networks:
-      - app-network
-
-  # Clients Service
   clients-service:
     build:
       context: ./clients-svc
       dockerfile: Dockerfile
+      args:
+        build_env: ${BUILD_ENV:-dev}
     container_name: clients-service
+    volumes:
+      - ./clients-svc:/app:delegated  # Only mounted in dev
     ports:
-      - "5004:5001"  # Flask
-      - "5005:5002"  # Shiny
+      - "6503:5000"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  prospects-service:
+    build:
+      context: ./prospects-svc
+      dockerfile: Dockerfile
+      args:
+        build_env: ${BUILD_ENV:-dev}
+    container_name: prospects-service
+    volumes:
+      - ./prospects-svc:/app:delegated  # Only mounted in dev
+    ports:
+      - "6504:5000"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  catalog-service:
+    build:
+      context: ./catalog-svc
+      dockerfile: Dockerfile
+      args:
+        build_env: ${BUILD_ENV:-dev}
+    container_name: catalog-service
+    volumes:
+      - ./catalog-svc:/app:delegated  # Only mounted in dev
+    ports:
+      - "6502:5000"
+    networks:
+      - app-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
 networks:
   app-network:
